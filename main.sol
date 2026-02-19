@@ -488,3 +488,38 @@ contract gru {
         for (uint256 i = 0; i < n; i++) ids[i] = stakes[all[offset + i]].marketId;
     }
 
+    function getMarketStakeIdsPaginated(uint256 marketId, uint256 offset, uint256 limit) external view returns (uint256[] memory ids) {
+        uint256[] storage all = stakeIdsByMarket[marketId];
+        if (offset >= all.length) return new uint256[](0);
+        uint256 end = offset + limit;
+        if (end > all.length) end = all.length;
+        uint256 n = end - offset;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) ids[i] = all[offset + i];
+    }
+
+    function getActiveMarketCount() external view returns (uint256 count) {
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (!markets[i].resolved && block.number < markets[i].resolutionBlock) count++;
+        }
+    }
+
+    function getResolvedMarketCount() external view returns (uint256 count) {
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (markets[i].resolved) count++;
+        }
+    }
+
+    function getMarketIdsResolvable() external view returns (uint256[] memory ids) {
+        uint256 n = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            ForecastMarket storage m = markets[i];
+            if (!m.resolved && block.number >= m.resolutionBlock + RESOLUTION_DELAY_BLOCKS) n++;
+        }
+        ids = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            ForecastMarket storage m = markets[i];
+            if (!m.resolved && block.number >= m.resolutionBlock + RESOLUTION_DELAY_BLOCKS) {
+                ids[j] = i;
+                j++;
