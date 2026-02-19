@@ -138,3 +138,38 @@ contract gru {
         (bool ok,) = to.call{value: value}("");
         if (!ok) revert ErrTransferFailed();
     }
+
+    function createMarket(bytes32 questionHash, uint256 resolutionBlock) external onlyMarketCreator whenNotPaused nonReentrant {
+        if (resolutionBlock <= block.number) revert ErrResolutionBlockPast();
+        if (resolutionBlock < block.number + MARKET_MIN_LIFETIME_BLOCKS) revert ErrResolutionBlockTooSoon();
+        if (marketCount >= MAX_MARKETS) revert ErrMarketCapReached();
+
+        marketCount++;
+        uint256 id = marketCount;
+        markets[id] = ForecastMarket({
+            questionHash: questionHash,
+            resolutionBlock: resolutionBlock,
+            createdAtBlock: block.number,
+            creator: msg.sender,
+            winningOutcome: 2,
+            resolved: false,
+            poolYesWei: 0,
+            poolNoWei: 0,
+            totalStakersYes: 0,
+            totalStakersNo: 0
+        });
+        marketIdsByCreator[msg.sender].push(id);
+        _marketIdList.push(id);
+        emit MarketCreated(id, questionHash, resolutionBlock, msg.sender);
+    }
+
+    function placeStake(uint256 marketId, uint8 outcome) external payable nonReentrant whenNotPaused {
+        if (marketId == 0 || marketId > marketCount) revert ErrMarketNotFound();
+        if (outcome >= BINARY_OUTCOMES) revert ErrOutcomeInvalid();
+        if (msg.value < MIN_STAKE_WEI) revert ErrStakeTooLow();
+        if (msg.value > MAX_STAKE_WEI) revert ErrStakeTooHigh();
+
+        ForecastMarket storage m = markets[marketId];
+        if (m.resolved) revert ErrAlreadyResolved();
+        if (block.number >= m.resolutionBlock) revert ErrMarketClosed();
+        if (stakeIdsByMarket[marketId].length >= MAX_STAKES_PER_MARKET) revert ErrMarketCapReached();
