@@ -733,3 +733,38 @@ contract gru {
         ids = new uint256[](n);
         uint256 j = 0;
         for (uint256 i = 1; i <= marketCount; i++) {
+            if (!markets[i].resolved && block.number < markets[i].resolutionBlock) {
+                ids[j] = i;
+                j++;
+            }
+        }
+    }
+
+    function getProtocolBalance() external view returns (uint256) {
+        return address(this).balance;
+    }
+
+    function getFeeAccrued() external view returns (uint256) {
+        return totalFeesWei;
+    }
+
+    function getVolumeToDate() external view returns (uint256) {
+        return totalStakeVolumeWei;
+    }
+
+    function getPayoutsToDate() external view returns (uint256) {
+        return totalPayoutsWei;
+    }
+
+    function isStakeClaimed(uint256 stakeId) external view returns (bool) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return false;
+        uint256 marketId = stakes[stakeId].marketId;
+        return hasClaimedMarket[marketId][stakes[stakeId].staker];
+    }
+
+    function getStakeOutcome(uint256 stakeId) external view returns (uint8) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return 2;
+        return stakes[stakeId].outcome;
+    }
+
+    function getStakeAmount(uint256 stakeId) external view returns (uint256) {
