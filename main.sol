@@ -698,3 +698,38 @@ contract gru {
     }
 
     function getFirstNMarketIds(uint256 n) external view returns (uint256[] memory ids) {
+        if (n > _marketIdList.length) n = _marketIdList.length;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) ids[i] = _marketIdList[i];
+    }
+
+    function getLastNMarketIds(uint256 n) external view returns (uint256[] memory ids) {
+        uint256 len = _marketIdList.length;
+        if (n > len) n = len;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) ids[i] = _marketIdList[len - 1 - i];
+    }
+
+    function getResolvedMarketIds() external view returns (uint256[] memory ids) {
+        uint256 n = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (markets[i].resolved) n++;
+        }
+        ids = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (markets[i].resolved) {
+                ids[j] = i;
+                j++;
+            }
+        }
+    }
+
+    function getOpenMarketIds() external view returns (uint256[] memory ids) {
+        uint256 n = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (!markets[i].resolved && block.number < markets[i].resolutionBlock) n++;
+        }
+        ids = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
