@@ -768,3 +768,38 @@ contract gru {
     }
 
     function getStakeAmount(uint256 stakeId) external view returns (uint256) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return 0;
+        return stakes[stakeId].amountWei;
+    }
+
+    function getStakeStaker(uint256 stakeId) external view returns (address) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return address(0);
+        return stakes[stakeId].staker;
+    }
+
+    function getStakeMarketId(uint256 stakeId) external view returns (uint256) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return 0;
+        return stakes[stakeId].marketId;
+    }
+
+    function getMarketQuestionHash(uint256 marketId) external view returns (bytes32) {
+        if (marketId == 0 || marketId > marketCount) return bytes32(0);
+        return markets[marketId].questionHash;
+    }
+
+    function getMarketResolutionBlock(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].resolutionBlock;
+    }
+
+    function getMarketCreatorAddress(uint256 marketId) external view returns (address) {
+        if (marketId == 0 || marketId > marketCount) return address(0);
+        return markets[marketId].creator;
+    }
+
+    function getMarketResolvedFlag(uint256 marketId) external view returns (bool) {
+        if (marketId == 0 || marketId > marketCount) return false;
+        return markets[marketId].resolved;
+    }
+
+    function getMarketWinningOutcome(uint256 marketId) external view returns (uint8) {
