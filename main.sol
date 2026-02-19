@@ -803,3 +803,38 @@ contract gru {
     }
 
     function getMarketWinningOutcome(uint256 marketId) external view returns (uint8) {
+        if (marketId == 0 || marketId > marketCount) return 2;
+        return markets[marketId].winningOutcome;
+    }
+
+    function getMarketPoolYes(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].poolYesWei;
+    }
+
+    function getMarketPoolNo(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].poolNoWei;
+    }
+
+    function getMarketCreatedAtBlock(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].createdAtBlock;
+    }
+
+    function getFullMarketSnapshot(uint256 marketId) external view returns (
+        bytes32 qHash,
+        uint256 resBlock,
+        uint256 createdBlock,
+        address creatorAddr,
+        uint8 winning,
+        bool isResolved,
+        uint256 yesPool,
+        uint256 noPool,
+        uint256 stakersYes,
+        uint256 stakersNo,
+        uint256 numStakes
+    ) {
+        if (marketId == 0 || marketId > marketCount) return (bytes32(0), 0, 0, address(0), 2, false, 0, 0, 0, 0, 0);
+        ForecastMarket storage m = markets[marketId];
+        qHash = m.questionHash;
