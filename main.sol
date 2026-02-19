@@ -558,3 +558,38 @@ contract gru {
 
     function getMarketIdsActiveBeforeBlock(uint256 beforeBlock) external view returns (uint256[] memory ids) {
         uint256 n = 0;
+        for (uint256 i = 0; i < _marketIdList.length; i++) {
+            uint256 id = _marketIdList[i];
+            if (!markets[id].resolved && markets[id].resolutionBlock > beforeBlock) n++;
+        }
+        ids = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 0; i < _marketIdList.length; i++) {
+            uint256 id = _marketIdList[i];
+            if (!markets[id].resolved && markets[id].resolutionBlock > beforeBlock) {
+                ids[j] = id;
+                j++;
+            }
+        }
+    }
+
+    function getStakerTotalStakedYes(address staker) external view returns (uint256 total) {
+        uint256[] storage ids = stakeIdsByStaker[staker];
+        for (uint256 i = 0; i < ids.length; i++) {
+            if (stakes[ids[i]].outcome == 1) total += stakes[ids[i]].amountWei;
+        }
+    }
+
+    function getStakerTotalStakedNo(address staker) external view returns (uint256 total) {
+        uint256[] storage ids = stakeIdsByStaker[staker];
+        for (uint256 i = 0; i < ids.length; i++) {
+            if (stakes[ids[i]].outcome == 0) total += stakes[ids[i]].amountWei;
+        }
+    }
+
+    function getStakerStakesOnMarket(address staker, uint256 marketId) external view returns (
+        uint256[] memory stakeIdsOut,
+        uint8[] memory outcomes,
+        uint256[] memory amountWeis
+    ) {
+        uint256[] storage allIds = stakeIdsByStaker[staker];
