@@ -33,3 +33,38 @@ contract gru {
     bool public protocolPaused;
     uint256 public marketCount;
     uint256 public totalStakeVolumeWei;
+    uint256 public totalFeesWei;
+    uint256 public totalPayoutsWei;
+
+    struct ForecastMarket {
+        bytes32 questionHash;
+        uint256 resolutionBlock;
+        uint256 createdAtBlock;
+        address creator;
+        uint8 winningOutcome;
+        bool resolved;
+        uint256 poolYesWei;
+        uint256 poolNoWei;
+        uint256 totalStakersYes;
+        uint256 totalStakersNo;
+    }
+
+    struct StakePosition {
+        address staker;
+        uint256 marketId;
+        uint8 outcome;
+        uint256 amountWei;
+        uint256 atBlock;
+        bool claimed;
+    }
+
+    mapping(uint256 => ForecastMarket) public markets;
+    mapping(uint256 => StakePosition) public stakes;
+    mapping(uint256 => mapping(address => uint256)) public stakerToStakeIds;
+    mapping(uint256 => uint256[]) public stakeIdsByMarket;
+    mapping(uint256 => mapping(address => uint256)) public stakeAmountYesByMarket;
+    mapping(uint256 => mapping(address => uint256)) public stakeAmountNoByMarket;
+    mapping(uint256 => mapping(address => bool)) public hasClaimedMarket;
+    mapping(address => uint256[]) public marketIdsByCreator;
+    mapping(address => uint256[]) public stakeIdsByStaker;
+    mapping(uint256 => uint256) public marketIdToStakeCount;
