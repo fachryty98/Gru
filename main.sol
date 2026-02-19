@@ -663,3 +663,38 @@ contract gru {
                 ids[j] = all[i];
                 j++;
             }
+        }
+    }
+
+    function getClaimableMarketsForStaker(address staker) external view returns (uint256[] memory marketIds) {
+        uint256 n = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            ForecastMarket storage m = markets[i];
+            if (!m.resolved) continue;
+            if (hasClaimedMarket[i][staker]) continue;
+            uint256 myStake = m.winningOutcome == 1
+                ? stakeAmountYesByMarket[i][staker]
+                : stakeAmountNoByMarket[i][staker];
+            if (myStake > 0) n++;
+        }
+        marketIds = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 1; i <= marketCount; i++) {
+            ForecastMarket storage m = markets[i];
+            if (!m.resolved) continue;
+            if (hasClaimedMarket[i][staker]) continue;
+            uint256 myStake = m.winningOutcome == 1
+                ? stakeAmountYesByMarket[i][staker]
+                : stakeAmountNoByMarket[i][staker];
+            if (myStake > 0) {
+                marketIds[j] = i;
+                j++;
+            }
+        }
+    }
+
+    function getMarketIdsCreatedBy(address creator) external view returns (uint256[] memory) {
+        return marketIdsByCreator[creator];
+    }
+
+    function getFirstNMarketIds(uint256 n) external view returns (uint256[] memory ids) {
