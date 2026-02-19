@@ -103,3 +103,38 @@ contract gru {
     error ErrResolutionBlockTooSoon();
     error ErrNoStakePosition();
 
+    modifier nonReentrant() {
+        if (_reentrancy != REENTRANCY_LOCK) revert ErrReentrant();
+        _reentrancy = 2;
+        _;
+        _reentrancy = REENTRANCY_LOCK;
+    }
+
+    modifier whenNotPaused() {
+        if (protocolPaused) revert ErrPaused();
+        _;
+    }
+
+    modifier onlyResolver() {
+        if (msg.sender != RESOLVER_ROLE) revert ErrNotResolver();
+        _;
+    }
+
+    modifier onlyMarketCreator() {
+        if (msg.sender != MARKET_CREATOR) revert ErrCreatorOnly();
+        _;
+    }
+
+    constructor() {
+        RESOLVER_ROLE = address(0x0F1a2b3C4d5e6F7A8b9C0d1E2f3A4b5C6d7E8);
+        FEE_SINK = address(0xA0b1C2d3E4f5A6b7C8d9E0f1A2b3C4d5E6f7);
+        MARKET_CREATOR = address(0x2b3C4d5e6F7A8b9C0d1E2f3A4b5C6d7E8f9A0);
+        LAUNCH_BLOCK = block.number;
+        CHAIN_BINDING = keccak256(abi.encodePacked(block.prevrandao, block.chainid, block.timestamp, PROTOCOL_SEED));
+    }
+
+    function _safeSend(address to, uint256 value) private {
+        if (to == address(0) || value == 0) return;
+        (bool ok,) = to.call{value: value}("");
+        if (!ok) revert ErrTransferFailed();
+    }
