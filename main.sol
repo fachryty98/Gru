@@ -68,3 +68,38 @@ contract gru {
     mapping(address => uint256[]) public marketIdsByCreator;
     mapping(address => uint256[]) public stakeIdsByStaker;
     mapping(uint256 => uint256) public marketIdToStakeCount;
+
+    uint256 private _stakeCounter;
+    uint256[] private _marketIdList;
+
+    event MarketCreated(uint256 indexed marketId, bytes32 questionHash, uint256 resolutionBlock, address indexed creator);
+    event StakePlaced(uint256 indexed stakeId, uint256 indexed marketId, address indexed staker, uint8 outcome, uint256 amountWei);
+    event MarketResolved(uint256 indexed marketId, uint8 winningOutcome, uint256 poolYesWei, uint256 poolNoWei);
+    event PayoutClaimed(uint256 indexed marketId, address indexed staker, uint256 amountWei);
+    event FeeSwept(address indexed sink, uint256 amountWei);
+    event ProtocolPauseToggled(bool paused);
+    event StakeTransferred(uint256 indexed stakeId, address indexed from, address indexed to);
+
+    error ErrMarketClosed();
+    error ErrOutcomeInvalid();
+    error ErrNotResolver();
+    error ErrStakeTooLow();
+    error ErrAlreadyResolved();
+    error ErrClaimZero();
+    error ErrTransferFailed();
+    error ErrReentrant();
+    error ErrZeroAddress();
+    error ErrPaused();
+    error ErrResolutionWindow();
+    error ErrUnauthorized();
+    error ErrMarketNotFound();
+    error ErrStakeNotFound();
+    error ErrStakeTooHigh();
+    error ErrMarketNotResolved();
+    error ErrNothingToClaim();
+    error ErrCreatorOnly();
+    error ErrMarketCapReached();
+    error ErrResolutionBlockPast();
+    error ErrResolutionBlockTooSoon();
+    error ErrNoStakePosition();
+
