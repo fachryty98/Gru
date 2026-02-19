@@ -593,3 +593,38 @@ contract gru {
         uint256[] memory amountWeis
     ) {
         uint256[] storage allIds = stakeIdsByStaker[staker];
+        uint256 n = 0;
+        for (uint256 i = 0; i < allIds.length; i++) {
+            if (stakes[allIds[i]].marketId == marketId) n++;
+        }
+        stakeIdsOut = new uint256[](n);
+        outcomes = new uint8[](n);
+        amountWeis = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 0; i < allIds.length; i++) {
+            if (stakes[allIds[i]].marketId == marketId) {
+                stakeIdsOut[j] = allIds[i];
+                outcomes[j] = stakes[allIds[i]].outcome;
+                amountWeis[j] = stakes[allIds[i]].amountWei;
+                j++;
+            }
+        }
+    }
+
+    function getMarketTotalStakes(uint256 marketId) external view returns (uint256) {
+        return stakeIdsByMarket[marketId].length;
+    }
+
+    function getBlocksUntilResolution(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return type(uint256).max;
+        ForecastMarket storage m = markets[marketId];
+        if (m.resolved) return 0;
+        if (block.number >= m.resolutionBlock) return 0;
+        return m.resolutionBlock - block.number;
+    }
+
+    function getBlocksUntilResolvable(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return type(uint256).max;
+        ForecastMarket storage m = markets[marketId];
+        if (m.resolved) return 0;
+        uint256 target = m.resolutionBlock + RESOLUTION_DELAY_BLOCKS;
