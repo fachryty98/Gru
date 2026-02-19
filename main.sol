@@ -523,3 +523,38 @@ contract gru {
             if (!m.resolved && block.number >= m.resolutionBlock + RESOLUTION_DELAY_BLOCKS) {
                 ids[j] = i;
                 j++;
+            }
+        }
+    }
+
+    function getWinningOutcome(uint256 marketId) external view returns (uint8) {
+        if (marketId == 0 || marketId > marketCount) return 2;
+        return markets[marketId].winningOutcome;
+    }
+
+    function getQuestionHash(uint256 marketId) external view returns (bytes32) {
+        if (marketId == 0 || marketId > marketCount) return bytes32(0);
+        return markets[marketId].questionHash;
+    }
+
+    function getCreatedAtBlock(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].createdAtBlock;
+    }
+
+    function getTotalStakers(uint256 marketId) external view returns (uint256 yesCount, uint256 noCount) {
+        if (marketId == 0 || marketId > marketCount) return (0, 0);
+        yesCount = markets[marketId].totalStakersYes;
+        noCount = markets[marketId].totalStakersNo;
+    }
+
+    function stakeCounter() external view returns (uint256) {
+        return _stakeCounter;
+    }
+
+    function marketIdListLength() external view returns (uint256) {
+        return _marketIdList.length;
+    }
+
+    function getMarketIdsActiveBeforeBlock(uint256 beforeBlock) external view returns (uint256[] memory ids) {
+        uint256 n = 0;
