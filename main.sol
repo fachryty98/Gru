@@ -243,3 +243,38 @@ contract gru {
     function togglePause() external onlyMarketCreator {
         protocolPaused = !protocolPaused;
         emit ProtocolPauseToggled(protocolPaused);
+    }
+
+    function sweepFees() external nonReentrant {
+        if (msg.sender != FEE_SINK) revert ErrUnauthorized();
+        uint256 amt = totalFeesWei;
+        if (amt > 0) {
+            totalFeesWei = 0;
+            _safeSend(FEE_SINK, amt);
+            emit FeeSwept(FEE_SINK, amt);
+        }
+    }
+
+    function getMarketIds() external view returns (uint256[] memory) {
+        return _marketIdList;
+    }
+
+    function getMarketInfo(uint256 marketId) external view returns (
+        bytes32 questionHash,
+        uint256 resolutionBlock,
+        uint256 createdAtBlock,
+        address creator,
+        uint8 winningOutcome,
+        bool resolved,
+        uint256 poolYesWei,
+        uint256 poolNoWei,
+        uint256 totalStakersYes,
+        uint256 totalStakersNo
+    ) {
+        if (marketId == 0 || marketId > marketCount) revert ErrMarketNotFound();
+        ForecastMarket storage m = markets[marketId];
+        questionHash = m.questionHash;
+        resolutionBlock = m.resolutionBlock;
+        createdAtBlock = m.createdAtBlock;
+        creator = m.creator;
+        winningOutcome = m.winningOutcome;
