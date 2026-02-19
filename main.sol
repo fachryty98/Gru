@@ -278,3 +278,38 @@ contract gru {
         createdAtBlock = m.createdAtBlock;
         creator = m.creator;
         winningOutcome = m.winningOutcome;
+        resolved = m.resolved;
+        poolYesWei = m.poolYesWei;
+        poolNoWei = m.poolNoWei;
+        totalStakersYes = m.totalStakersYes;
+        totalStakersNo = m.totalStakersNo;
+    }
+
+    function getStakeInfo(uint256 stakeId) external view returns (
+        address staker,
+        uint256 marketId,
+        uint8 outcome,
+        uint256 amountWei,
+        uint256 atBlock,
+        bool claimed
+    ) {
+        if (stakeId == 0 || stakeId > _stakeCounter) revert ErrStakeNotFound();
+        StakePosition storage s = stakes[stakeId];
+        staker = s.staker;
+        marketId = s.marketId;
+        outcome = s.outcome;
+        amountWei = s.amountWei;
+        atBlock = s.atBlock;
+        claimed = s.claimed;
+    }
+
+    function getStakeIdsByMarket(uint256 marketId) external view returns (uint256[] memory) {
+        return stakeIdsByMarket[marketId];
+    }
+
+    function getStakeIdsByStaker(address staker) external view returns (uint256[] memory) {
+        return stakeIdsByStaker[staker];
+    }
+
+    function getMarketIdsByCreator(address creator) external view returns (uint256[] memory) {
+        return marketIdsByCreator[creator];
