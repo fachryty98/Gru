@@ -628,3 +628,38 @@ contract gru {
         ForecastMarket storage m = markets[marketId];
         if (m.resolved) return 0;
         uint256 target = m.resolutionBlock + RESOLUTION_DELAY_BLOCKS;
+        if (block.number >= target) return 0;
+        return target - block.number;
+    }
+
+    function getMarketSummary(uint256 marketId) external view returns (
+        bool resolved,
+        uint8 winningOutcome,
+        uint256 poolYesWei,
+        uint256 poolNoWei,
+        uint256 resolutionBlock,
+        uint256 stakeCount
+    ) {
+        if (marketId == 0 || marketId > marketCount) return (false, 2, 0, 0, 0, 0);
+        ForecastMarket storage m = markets[marketId];
+        resolved = m.resolved;
+        winningOutcome = m.winningOutcome;
+        poolYesWei = m.poolYesWei;
+        poolNoWei = m.poolNoWei;
+        resolutionBlock = m.resolutionBlock;
+        stakeCount = stakeIdsByMarket[marketId].length;
+    }
+
+    function getStakeIdsForMarketAndStaker(uint256 marketId, address staker) external view returns (uint256[] memory ids) {
+        uint256[] storage all = stakeIdsByStaker[staker];
+        uint256 n = 0;
+        for (uint256 i = 0; i < all.length; i++) {
+            if (stakes[all[i]].marketId == marketId) n++;
+        }
+        ids = new uint256[](n);
+        uint256 j = 0;
+        for (uint256 i = 0; i < all.length; i++) {
+            if (stakes[all[i]].marketId == marketId) {
+                ids[j] = all[i];
+                j++;
+            }
