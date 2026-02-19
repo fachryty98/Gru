@@ -418,3 +418,38 @@ contract gru {
                 resolveds[i] = m.resolved;
                 poolYesWeis[i] = m.poolYesWei;
                 poolNoWeis[i] = m.poolNoWei;
+                winningOutcomes[i] = m.winningOutcome;
+            }
+        }
+    }
+
+    function getStakesBatch(uint256[] calldata stakeIds) external view returns (
+        address[] memory stakers,
+        uint256[] memory marketIds,
+        uint8[] memory outcomes,
+        uint256[] memory amountWeis,
+        bool[] memory claimeds
+    ) {
+        uint256 n = stakeIds.length;
+        stakers = new address[](n);
+        marketIds = new uint256[](n);
+        outcomes = new uint8[](n);
+        amountWeis = new uint256[](n);
+        claimeds = new bool[](n);
+        for (uint256 i = 0; i < n; i++) {
+            uint256 id = stakeIds[i];
+            if (id != 0 && id <= _stakeCounter) {
+                StakePosition storage s = stakes[id];
+                stakers[i] = s.staker;
+                marketIds[i] = s.marketId;
+                outcomes[i] = s.outcome;
+                amountWeis[i] = s.amountWei;
+                claimeds[i] = s.claimed;
+            }
+        }
+    }
+
+    function getMarketStakeCount(uint256 marketId) external view returns (uint256) {
+        return stakeIdsByMarket[marketId].length;
+    }
+
