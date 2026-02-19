@@ -173,3 +173,38 @@ contract gru {
         if (m.resolved) revert ErrAlreadyResolved();
         if (block.number >= m.resolutionBlock) revert ErrMarketClosed();
         if (stakeIdsByMarket[marketId].length >= MAX_STAKES_PER_MARKET) revert ErrMarketCapReached();
+
+        _stakeCounter++;
+        uint256 stakeId = _stakeCounter;
+        stakes[stakeId] = StakePosition({
+            staker: msg.sender,
+            marketId: marketId,
+            outcome: outcome,
+            amountWei: msg.value,
+            atBlock: block.number,
+            claimed: false
+        });
+        stakeIdsByMarket[marketId].push(stakeId);
+        stakeIdsByStaker[msg.sender].push(stakeId);
+        marketIdToStakeCount[marketId]++;
+
+        if (outcome == 1) {
+            m.poolYesWei += msg.value;
+            stakeAmountYesByMarket[marketId][msg.sender] += msg.value;
+            if (stakeAmountYesByMarket[marketId][msg.sender] == msg.value) m.totalStakersYes++;
+        } else {
+            m.poolNoWei += msg.value;
+            stakeAmountNoByMarket[marketId][msg.sender] += msg.value;
+            if (stakeAmountNoByMarket[marketId][msg.sender] == msg.value) m.totalStakersNo++;
+        }
+
+        totalStakeVolumeWei += msg.value;
+        emit StakePlaced(stakeId, marketId, msg.sender, outcome, msg.value);
+    }
+
+    function resolveMarket(uint256 marketId, uint8 winningOutcome) external onlyResolver nonReentrant {
+        if (marketId == 0 || marketId > marketCount) revert ErrMarketNotFound();
+        if (winningOutcome >= BINARY_OUTCOMES) revert ErrOutcomeInvalid();
+
+        ForecastMarket storage m = markets[marketId];
+        if (m.resolved) revert ErrAlreadyResolved();
