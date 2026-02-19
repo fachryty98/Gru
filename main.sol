@@ -313,3 +313,38 @@ contract gru {
 
     function getMarketIdsByCreator(address creator) external view returns (uint256[] memory) {
         return marketIdsByCreator[creator];
+    }
+
+    function getStakerStakeOnMarket(uint256 marketId, address staker) external view returns (uint256 yesWei, uint256 noWei) {
+        yesWei = stakeAmountYesByMarket[marketId][staker];
+        noWei = stakeAmountNoByMarket[marketId][staker];
+    }
+
+    function canResolve(uint256 marketId) external view returns (bool) {
+        if (marketId == 0 || marketId > marketCount) return false;
+        ForecastMarket storage m = markets[marketId];
+        return !m.resolved && block.number >= m.resolutionBlock + RESOLUTION_DELAY_BLOCKS;
+    }
+
+    function getClaimableEstimate(uint256 marketId, address staker) external view returns (uint256 payoutWei, uint256 feeWei) {
+        if (marketId == 0 || marketId > marketCount) return (0, 0);
+        ForecastMarket storage m = markets[marketId];
+        if (!m.resolved || hasClaimedMarket[marketId][staker]) return (0, 0);
+        uint256 winPool = m.winningOutcome == 1 ? m.poolYesWei : m.poolNoWei;
+        uint256 losePool = m.winningOutcome == 1 ? m.poolNoWei : m.poolYesWei;
+        if (winPool == 0) return (0, 0);
+        uint256 myStake = m.winningOutcome == 1
+            ? stakeAmountYesByMarket[marketId][staker]
+            : stakeAmountNoByMarket[marketId][staker];
+        if (myStake == 0) return (0, 0);
+        feeWei = (myStake * FEE_BPS) / BPS_DENOM;
+        uint256 shareOfLose = (losePool * myStake) / winPool;
+        payoutWei = myStake + shareOfLose - feeWei;
+    }
+
+    function hasClaimed(uint256 marketId, address staker) external view returns (bool) {
+        return hasClaimedMarket[marketId][staker];
+    }
+
+    function getGlobalStats() external view returns (
+        uint256 marketsCreated,
