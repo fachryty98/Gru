@@ -453,3 +453,38 @@ contract gru {
         return stakeIdsByMarket[marketId].length;
     }
 
+    function getStakerStakeCount(address staker) external view returns (uint256) {
+        return stakeIdsByStaker[staker].length;
+    }
+
+    function isMarketResolved(uint256 marketId) external view returns (bool) {
+        if (marketId == 0 || marketId > marketCount) return false;
+        return markets[marketId].resolved;
+    }
+
+    function getResolutionBlock(uint256 marketId) external view returns (uint256) {
+        if (marketId == 0 || marketId > marketCount) return 0;
+        return markets[marketId].resolutionBlock;
+    }
+
+    function getMarketCreator(uint256 marketId) external view returns (address) {
+        if (marketId == 0 || marketId > marketCount) return address(0);
+        return markets[marketId].creator;
+    }
+
+    function getMarketPools(uint256 marketId) external view returns (uint256 poolYes, uint256 poolNo) {
+        if (marketId == 0 || marketId > marketCount) return (0, 0);
+        poolYes = markets[marketId].poolYesWei;
+        poolNo = markets[marketId].poolNoWei;
+    }
+
+    function getStakerMarketIdsPaginated(address staker, uint256 offset, uint256 limit) external view returns (uint256[] memory ids) {
+        uint256[] storage all = stakeIdsByStaker[staker];
+        if (offset >= all.length) return new uint256[](0);
+        uint256 end = offset + limit;
+        if (end > all.length) end = all.length;
+        uint256 n = end - offset;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) ids[i] = stakes[all[offset + i]].marketId;
+    }
+
