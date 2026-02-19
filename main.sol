@@ -208,3 +208,38 @@ contract gru {
 
         ForecastMarket storage m = markets[marketId];
         if (m.resolved) revert ErrAlreadyResolved();
+        if (block.number < m.resolutionBlock + RESOLUTION_DELAY_BLOCKS) revert ErrResolutionWindow();
+
+        m.resolved = true;
+        m.winningOutcome = winningOutcome;
+        emit MarketResolved(marketId, winningOutcome, m.poolYesWei, m.poolNoWei);
+    }
+
+    function claimPayout(uint256 marketId) external nonReentrant {
+        if (marketId == 0 || marketId > marketCount) revert ErrMarketNotFound();
+        ForecastMarket storage m = markets[marketId];
+        if (!m.resolved) revert ErrMarketNotResolved();
+        if (hasClaimedMarket[marketId][msg.sender]) revert ErrNothingToClaim();
+
+        uint256 winPool = m.winningOutcome == 1 ? m.poolYesWei : m.poolNoWei;
+        uint256 losePool = m.winningOutcome == 1 ? m.poolNoWei : m.poolYesWei;
+        if (winPool == 0) revert ErrClaimZero();
+
+        uint256 myStake = m.winningOutcome == 1
+            ? stakeAmountYesByMarket[marketId][msg.sender]
+            : stakeAmountNoByMarket[marketId][msg.sender];
+        if (myStake == 0) revert ErrNoStakePosition();
+
+        hasClaimedMarket[marketId][msg.sender] = true;
+        uint256 fee = (myStake * FEE_BPS) / BPS_DENOM;
+        uint256 shareOfLose = (losePool * myStake) / winPool;
+        uint256 payout = myStake + shareOfLose - fee;
+        totalPayoutsWei += payout;
+        totalFeesWei += fee;
+        _safeSend(msg.sender, payout);
+        emit PayoutClaimed(marketId, msg.sender, payout);
+    }
+
+    function togglePause() external onlyMarketCreator {
+        protocolPaused = !protocolPaused;
+        emit ProtocolPauseToggled(protocolPaused);
