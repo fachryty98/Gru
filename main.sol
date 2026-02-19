@@ -383,3 +383,38 @@ contract gru {
         uint256 feeBps,
         uint256 resolutionDelayBlocks,
         uint256 maxMarkets,
+        uint256 maxStakesPerMarket
+    ) {
+        minStakeWei = MIN_STAKE_WEI;
+        maxStakeWei = MAX_STAKE_WEI;
+        binaryOutcomes = BINARY_OUTCOMES;
+        feeBps = FEE_BPS;
+        resolutionDelayBlocks = RESOLUTION_DELAY_BLOCKS;
+        maxMarkets = MAX_MARKETS;
+        maxStakesPerMarket = MAX_STAKES_PER_MARKET;
+    }
+
+    function getMarketsBatch(uint256[] calldata marketIds) external view returns (
+        bytes32[] memory questionHashes,
+        uint256[] memory resolutionBlocks,
+        bool[] memory resolveds,
+        uint256[] memory poolYesWeis,
+        uint256[] memory poolNoWeis,
+        uint8[] memory winningOutcomes
+    ) {
+        uint256 n = marketIds.length;
+        questionHashes = new bytes32[](n);
+        resolutionBlocks = new uint256[](n);
+        resolveds = new bool[](n);
+        poolYesWeis = new uint256[](n);
+        poolNoWeis = new uint256[](n);
+        winningOutcomes = new uint8[](n);
+        for (uint256 i = 0; i < n; i++) {
+            uint256 id = marketIds[i];
+            if (id != 0 && id <= marketCount) {
+                ForecastMarket storage m = markets[id];
+                questionHashes[i] = m.questionHash;
+                resolutionBlocks[i] = m.resolutionBlock;
+                resolveds[i] = m.resolved;
+                poolYesWeis[i] = m.poolYesWei;
+                poolNoWeis[i] = m.poolNoWei;
