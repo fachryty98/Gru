@@ -348,3 +348,38 @@ contract gru {
 
     function getGlobalStats() external view returns (
         uint256 marketsCreated,
+        uint256 totalVolumeWei,
+        uint256 totalFeesWei,
+        uint256 totalPayoutsWei,
+        uint256 stakeCount,
+        bool paused
+    ) {
+        marketsCreated = marketCount;
+        totalVolumeWei = totalStakeVolumeWei;
+        totalFeesWei = totalFeesWei;
+        totalPayoutsWei = totalPayoutsWei;
+        stakeCount = _stakeCounter;
+        paused = protocolPaused;
+    }
+
+    function getImmutableConfig() external view returns (
+        address resolverRole,
+        address feeSink,
+        address marketCreator,
+        uint256 launchBlock,
+        bytes32 chainBinding
+    ) {
+        resolverRole = RESOLVER_ROLE;
+        feeSink = FEE_SINK;
+        marketCreator = MARKET_CREATOR;
+        launchBlock = LAUNCH_BLOCK;
+        chainBinding = CHAIN_BINDING;
+    }
+
+    function getConstants() external pure returns (
+        uint256 minStakeWei,
+        uint256 maxStakeWei,
+        uint256 binaryOutcomes,
+        uint256 feeBps,
+        uint256 resolutionDelayBlocks,
+        uint256 maxMarkets,
