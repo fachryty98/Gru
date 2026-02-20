@@ -978,3 +978,29 @@ contract gru {
         return MIN_STAKE_WEI;
     }
 
+    function maxStakeWeiConstant() external pure returns (uint256) {
+        return MAX_STAKE_WEI;
+    }
+
+    function feeBpsConstant() external pure returns (uint256) {
+        return FEE_BPS;
+    }
+
+    function resolutionDelayBlocksConstant() external pure returns (uint256) {
+        return RESOLUTION_DELAY_BLOCKS;
+    }
+
+    function binaryOutcomesConstant() external pure returns (uint256) {
+        return BINARY_OUTCOMES;
+    }
+
+    function maxMarketsConstant() external pure returns (uint256) {
+        return MAX_MARKETS;
+    }
+
+    function maxStakesPerMarketConstant() external pure returns (uint256) {
+        return MAX_STAKES_PER_MARKET;
+    }
+
+    receive() external payable {}
+}
