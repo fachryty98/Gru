@@ -873,3 +873,38 @@ contract gru {
         marketWinningOutcome = m.winningOutcome;
     }
 
+    function computePotentialPayout(uint256 marketId, address staker, uint8 assumedWinningOutcome) external view returns (
+        uint256 payoutWei,
+        uint256 feeWei,
+        bool wouldWin
+    ) {
+        if (marketId == 0 || marketId > marketCount) return (0, 0, false);
+        ForecastMarket storage m = markets[marketId];
+        uint256 winPool = assumedWinningOutcome == 1 ? m.poolYesWei : m.poolNoWei;
+        uint256 losePool = assumedWinningOutcome == 1 ? m.poolNoWei : m.poolYesWei;
+        uint256 myStake = assumedWinningOutcome == 1
+            ? stakeAmountYesByMarket[marketId][staker]
+            : stakeAmountNoByMarket[marketId][staker];
+        wouldWin = myStake > 0;
+        if (!wouldWin || winPool == 0) return (0, 0, true);
+        feeWei = (myStake * FEE_BPS) / BPS_DENOM;
+        uint256 shareOfLose = (losePool * myStake) / winPool;
+        payoutWei = myStake + shareOfLose - feeWei;
+    }
+
+    function getMarketIdsPaginated(uint256 offset, uint256 limit) external view returns (uint256[] memory ids) {
+        uint256 len = _marketIdList.length;
+        if (offset >= len) return new uint256[](0);
+        uint256 end = offset + limit;
+        if (end > len) end = len;
+        uint256 n = end - offset;
+        ids = new uint256[](n);
+        for (uint256 i = 0; i < n; i++) ids[i] = _marketIdList[offset + i];
+    }
+
+    function getStakerUnclaimedMarketCount(address staker) external view returns (uint256 count) {
+        for (uint256 i = 1; i <= marketCount; i++) {
+            if (!markets[i].resolved) continue;
+            if (hasClaimedMarket[i][staker]) continue;
+            uint256 myStake = markets[i].winningOutcome == 1
+                ? stakeAmountYesByMarket[i][staker]
