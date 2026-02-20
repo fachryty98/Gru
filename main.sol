@@ -908,3 +908,38 @@ contract gru {
             if (hasClaimedMarket[i][staker]) continue;
             uint256 myStake = markets[i].winningOutcome == 1
                 ? stakeAmountYesByMarket[i][staker]
+                : stakeAmountNoByMarket[i][staker];
+            if (myStake > 0) count++;
+        }
+    }
+
+    function getChainBindingHash() external view returns (bytes32) {
+        return CHAIN_BINDING;
+    }
+
+    function getLaunchBlock() external view returns (uint256) {
+        return LAUNCH_BLOCK;
+    }
+
+    function getResolverRole() external view returns (address) {
+        return RESOLVER_ROLE;
+    }
+
+    function getFeeSinkAddress() external view returns (address) {
+        return FEE_SINK;
+    }
+
+    function getMarketCreatorRole() external view returns (address) {
+        return MARKET_CREATOR;
+    }
+
+    function isProtocolPaused() external view returns (bool) {
+        return protocolPaused;
+    }
+
+    function getMarketCount() external view returns (uint256) {
+        return marketCount;
+    }
+
+    function getTotalStakeVolume() external view returns (uint256) {
+        return totalStakeVolumeWei;
