@@ -943,3 +943,38 @@ contract gru {
 
     function getTotalStakeVolume() external view returns (uint256) {
         return totalStakeVolumeWei;
+    }
+
+    function getTotalFeesAccrued() external view returns (uint256) {
+        return totalFeesWei;
+    }
+
+    function getTotalPayoutsDone() external view returns (uint256) {
+        return totalPayoutsWei;
+    }
+
+    function getStakeIdCounter() external view returns (uint256) {
+        return _stakeCounter;
+    }
+
+    function getMarketIdAtIndex(uint256 index) external view returns (uint256) {
+        if (index >= _marketIdList.length) return 0;
+        return _marketIdList[index];
+    }
+
+    function getStakeIdForMarketAtIndex(uint256 marketId, uint256 index) external view returns (uint256) {
+        uint256[] storage ids = stakeIdsByMarket[marketId];
+        if (index >= ids.length) return 0;
+        return ids[index];
+    }
+
+    function getStakerStakeIdAtIndex(address staker, uint256 index) external view returns (uint256) {
+        uint256[] storage ids = stakeIdsByStaker[staker];
+        if (index >= ids.length) return 0;
+        return ids[index];
+    }
+
+    function minStakeWeiConstant() external pure returns (uint256) {
+        return MIN_STAKE_WEI;
+    }
+
