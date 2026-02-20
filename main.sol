@@ -838,3 +838,38 @@ contract gru {
         if (marketId == 0 || marketId > marketCount) return (bytes32(0), 0, 0, address(0), 2, false, 0, 0, 0, 0, 0);
         ForecastMarket storage m = markets[marketId];
         qHash = m.questionHash;
+        resBlock = m.resolutionBlock;
+        createdBlock = m.createdAtBlock;
+        creatorAddr = m.creator;
+        winning = m.winningOutcome;
+        isResolved = m.resolved;
+        yesPool = m.poolYesWei;
+        noPool = m.poolNoWei;
+        stakersYes = m.totalStakersYes;
+        stakersNo = m.totalStakersNo;
+        numStakes = stakeIdsByMarket[marketId].length;
+    }
+
+    function getFullStakeSnapshot(uint256 stakeId) external view returns (
+        address stakerAddr,
+        uint256 mktId,
+        uint8 outcomeIndex,
+        uint256 amountWei,
+        uint256 atBlockNum,
+        bool claimedFlag,
+        bool marketResolved,
+        uint8 marketWinningOutcome
+    ) {
+        if (stakeId == 0 || stakeId > _stakeCounter) return (address(0), 0, 2, 0, 0, false, false, 2);
+        StakePosition storage s = stakes[stakeId];
+        ForecastMarket storage m = markets[s.marketId];
+        stakerAddr = s.staker;
+        mktId = s.marketId;
+        outcomeIndex = s.outcome;
+        amountWei = s.amountWei;
+        atBlockNum = s.atBlock;
+        claimedFlag = hasClaimedMarket[s.marketId][s.staker];
+        marketResolved = m.resolved;
+        marketWinningOutcome = m.winningOutcome;
+    }
+
